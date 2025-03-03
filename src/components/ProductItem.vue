@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue';
-import { Product } from '../script/types';
+import { type Product } from '../script/types';
 
 const props = defineProps<{ product: Product }>();
 const emits = defineEmits(['view-details', 'edit-product', 'duplicate-product', 'delete-product']);

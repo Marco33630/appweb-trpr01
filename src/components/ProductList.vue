@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Product, ProductData } from '../script/types';
+import { type Product, type ProductData } from '../script/types';
 import ProductSearchBar from './ProductSearchBar.vue';
 import ProductItem from './ProductItem.vue';
 import ProductForm from './ProductForm.vue';

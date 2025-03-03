@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, defineEmits, watch, PropType, watchEffect } from 'vue';
-import { Product } from '../script/types';
+import { ref, defineEmits, watchEffect } from 'vue';
+import { type Product } from '../script/types';
 
 const props = defineProps<{
   product?: Product | null;
