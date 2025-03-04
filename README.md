@@ -20,4 +20,8 @@ Cette application à été en partie développer a l'aide de technologies d'IA g
  - Proposition d'utilisé un DAO ProducData pour la création d'un objet (ProductList.vue)
  - Assisstance à la création d'un Modal de base (Template de création d'un modal de base d'ont la logique a été réutilisé pour la création des modals) (ProductList.vue)
 
+#URL du Site déployé : https://marco33630.github.io/appweb-trpr01/
+
+#URL du répo GitHub : https://github.com/Marco33630/appweb-trpr01.git
+
  

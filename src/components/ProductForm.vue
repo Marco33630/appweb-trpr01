@@ -13,9 +13,51 @@ const newProductStocks = ref('');
 
 const emits = defineEmits(['create-product']);
 
-//Watcher permettant de vérifier si modification ou création de produit
-//watchEffect à été trouvé sur la documentation de vuejs : https://vuejs.org/guide/essentials/watchers.html
-watchEffect(async() => {
+const errors = ref({
+  title: '',
+  description: '',
+  price: '',
+  stock: ''
+});
+
+const ERROR_MESSAGES = {
+  title: 'Le titre ne doit pas être vide',
+  description: 'La description ne doit pas être vide',
+  price: 'Le prix doit être un nombre valide et doit respecter le format 10.99',
+  stock: 'La quantité en stock doit être un nombre valide',
+};
+
+function displayError(field: keyof typeof errors.value, message: string) {
+  errors.value[field] = message;
+}
+
+function clearError(field: keyof typeof errors.value) {
+  errors.value[field] = '';
+}
+
+function validateField(field: keyof typeof errors.value, value: string) {
+  clearError(field);
+  switch (field) {
+    case 'title':
+      if (!value.trim()) displayError(field, ERROR_MESSAGES.title);
+      break;
+    case 'description':
+      if (!value.trim()) displayError(field, ERROR_MESSAGES.description);
+      break;
+    case 'price':
+      if (!/^[0-9]+(\.[0-9]{1,2})?$/.test(value) || parseFloat(value) < 0) {
+        displayError(field, ERROR_MESSAGES.price);
+      }
+      break;
+    case 'stock':
+      if (!/^[0-9]+$/.test(value) || parseInt(value) < 0) {
+        displayError(field, ERROR_MESSAGES.stock);
+      }
+      break;
+  }
+}
+
+watchEffect(() => {
   if (props.product) {
     newProductTitle.value = props.product.name;
     newProductDescription.value = props.product.description;
@@ -30,20 +72,27 @@ watchEffect(async() => {
 });
 
 function createNewProduct() {
-  if (newProductTitle.value.trim()) {
-    const price = newProductPrice.value ? parseFloat(newProductPrice.value) : 0;
-    const stock = newProductStocks.value? parseInt(newProductStocks.value) : 0;
-    emits('create-product', {
-      name: newProductTitle.value.trim(),
-      description: newProductDescription.value,
-      price: price,
-      stock: stock
-    });
-    newProductTitle.value = '';
-    newProductDescription.value = '';
-    newProductPrice.value = '';
-    newProductStocks.value = '';
-  }
+  validateField('title', newProductTitle.value);
+  validateField('description', newProductDescription.value);
+  validateField('price', newProductPrice.value);
+  validateField('stock', newProductStocks.value);
+
+  if (Object.values(errors.value).some(error => error)) return;
+
+  const price = newProductPrice.value ? parseFloat(newProductPrice.value) : 0;
+  const stock = newProductStocks.value ? parseInt(newProductStocks.value) : 0;
+
+  emits('create-product', {
+    name: newProductTitle.value.trim(),
+    description: newProductDescription.value,
+    price: price,
+    stock: stock
+  });
+
+  newProductTitle.value = '';
+  newProductDescription.value = '';
+  newProductPrice.value = '';
+  newProductStocks.value = '';
 }
 </script>
 
@@ -54,17 +103,19 @@ function createNewProduct() {
         <h5 class="mb-0">Add New Product</h5>
       </div>
       <div class="card-body">
-        <form @submit.prevent="createNewProduct">
+        <form @submit.prevent="createNewProduct" novalidate>
           <div class="mb-3">
             <label for="productName" class="form-label">Product Name</label>
             <input 
               type="text" 
               class="form-control" 
               id="productName"
-              v-model="newProductTitle" 
+              v-model="newProductTitle"
+              @blur="validateField('title', newProductTitle)" 
               placeholder="Enter product name" 
               required
             />
+            <div v-if="errors.title" class="text-danger">{{ errors.title }}</div>
           </div>
 
           <div class="mb-3">
@@ -72,10 +123,12 @@ function createNewProduct() {
             <textarea 
               class="form-control" 
               id="productDescription" 
-              v-model="newProductDescription" 
+              v-model="newProductDescription"
+              @blur="validateField('description', newProductDescription)" 
               placeholder="Enter product description"
               rows="3"
             ></textarea>
+            <div v-if="errors.description" class="text-danger">{{ errors.description }}</div>
           </div>
 
           <div class="mb-3">
@@ -87,15 +140,12 @@ function createNewProduct() {
                 class="form-control" 
                 id="productPrice" 
                 v-model="newProductPrice" 
+                @blur="validateField('price', newProductPrice)"
                 placeholder="0.00" 
-                pattern="^\d*(\.\d{0,2})?$"
-                title="Please enter a valid price (e.g. 10.99)"
                 inputmode="decimal"
               />
             </div>
-            <div class="form-text" v-if="newProductPrice && isNaN(parseFloat(newProductPrice))">
-              Please enter a valid price
-            </div>
+            <div v-if="errors.price" class="text-danger">{{ errors.price }}</div>
           </div>
 
           <div class="mb-3">
@@ -104,21 +154,18 @@ function createNewProduct() {
               type="number" 
               class="form-control" 
               id="productStock"
-              v-model="newProductStocks" 
+              v-model="newProductStocks"
+              @blur="validateField('stock', newProductStocks)" 
               placeholder="Enter stock quantity" 
               min="0"
               step="1"
               required
             />
+            <div v-if="errors.stock" class="text-danger">{{ errors.stock }}</div>
           </div>
 
           <div class="d-grid">
-            <button 
-              type="submit" 
-              class="btn btn-success" 
-            >
-              <i class="bi bi-plus-circle me-2"></i>Add Product
-            </button>
+            <button type="submit" class="btn btn-success">Add Product</button>
           </div>
         </form>
       </div>
@@ -128,5 +175,4 @@ function createNewProduct() {
 
 
 <style scoped>
-
 </style>
